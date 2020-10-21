@@ -5,6 +5,8 @@
    file:translate.c
 */
 
+/* @author Sundorius */
+
 #include <stdio.h>
 
 /* Defines for greek chars integer values. */
@@ -17,7 +19,7 @@
 #define t 244
 #define T 212
 
-char const eng[][4] = { "'A\0", "·\0", "'E\0", "'H\0", "'I\0", "»\0", "'O\0", "½\0",
+char const eng[][4] = { "'A\0", "Â·\0", "'E\0", "'H\0", "'I\0", "Â»\0", "'O\0", "Â½\0",
 						"'Y\0", "'W\0", "i'\"\0", "A\0", "V\0", "G\0", "D\0", 
 						"E\0", "Z\0", "H\0", "8\0", "I\0", "K\0", "L\0", "M\0", 
 						"N\0", "KS\0", "O\0", "P\0", "R\0", "\0", "S\0", "T\0", /* Because the position 210 does not exist in array iso 8859-7, I filled it with "\0". */
