@@ -1,0 +1,146 @@
+ The correspondence of the commands was found by putting breakpoints in gdb in the suitable lines and by seeing which commands
+ of the .c file correspond.
+**Text Section
+
+   0x8048aac <readString>:      push   %ebp 		#saving the old ebp in the stack.
+   0x8048aad <readString+1>:    mov    %esp,%ebp  	#ebp is showing the old value.
+   0x8048aaf <readString+3>:    sub    $0x34,%esp 	#we keep space for the topic arguments.
+   0x8048ab2 <readString+6>:    movl   $0x0,-0x4(%ebp)  # int i = 0;
+   
+   0x8048ab9 <readString+13>:   mov    0x80d4b44,%eax		 #================== 
+   0x8048abe <readString+18>:   push   %eax			 #
+   0x8048abf <readString+19>:   call   0x8050850 <getc> 	 # c = fgetc(stdin); 
+   0x8048ac4 <readString+24>:   add    $0x4,%esp	         # 
+   0x8048ac7 <readString+27>:   mov    %eax,-0x8(%ebp)	         #================== 
+
+   0x8048aca <readString+30>:   cmpl   $0xffffffff,-0x8(%ebp) 	 # if (c==EOF)
+   0x8048ace <readString+34>:   je     0x8048ae8 <readString+60> # break;
+   0x8048ad0 <readString+36>:   cmpl   $0xa,-0x8(%ebp) 		 # if (c=='\n')
+   0x8048ad4 <readString+40>:   je     0x8048ae8 <readString+60> # break;
+
+   0x8048ad6 <readString+42>:   mov    -0x4(%ebp),%eax		 #=============
+   0x8048ad9 <readString+45>:   lea    0x1(%eax),%edx		 # buf[i] = c
+   0x8048adc <readString+48>:   mov    %edx,-0x4(%ebp)		 #=============
+   0x8048adf <readString+51>:   mov    -0x8(%ebp),%edx		 # i++
+   0x8048ae2 <readString+54>:   mov    %dl,-0x34(%ebp,%eax,1)
+   0x8048ae6 <readString+58>:   jmp    0x8048ab9 <readString+13> # do the loop again while(while(1))
+
+   0x8048ae8 <readString+60>:   lea    -0x34(%ebp),%edx		  #============
+   0x8048aeb <readString+63>:   mov    -0x4(%ebp),%eax		  #
+   0x8048aee <readString+66>:   add    %edx,%eax		  # buf[i] = 0
+   0x8048af0 <readString+68>:   movb   $0x0,(%eax)		  #============
+
+   0x8048af3 <readString+71>:   movl   $0x0,-0x4(%ebp) 		  # i = 0;
+   0x8048afa <readString+78>:   jmp    0x8048b15 <readString+105> # beginning of for loop
+
+   0x8048afc <readString+80>:   mov    -0x4(%ebp),%edx		 #===============
+   0x8048aff <readString+83>:   mov    0x8(%ebp),%eax		 #
+   0x8048b02 <readString+86>:   add    %eax,%edx		 #
+   0x8048b04 <readString+88>:   lea    -0x34(%ebp),%ecx		 # s[i] = buf[i]
+   0x8048b07 <readString+91>:   mov    -0x4(%ebp),%eax		 #
+   0x8048b0a <readString+94>:   add    %ecx,%eax		 #
+   0x8048b0c <readString+96>:   movzbl (%eax),%eax		 #
+   0x8048b0f <readString+99>:   mov    %al,(%edx)		 #===============
+
+   0x8048b11 <readString+101>:  addl   $0x1,-0x4(%ebp)		 # i++
+   0x8048b15 <readString+105>:  cmpl   $0x2b,-0x4(%ebp)		 # i < BUFSIZE
+   0x8048b19 <readString+109>:  jle    0x8048afc <readString+80> # do the loop again(for loop)
+
+   0x8048b1b <readString+111>:  nop				 #========
+   0x8048b1c <readString+112>:  leave 				 # return;
+   0x8048b1d <readString+113>:  ret				 #========
+
+**Main
+
+   0x8048b1e <main>:    push   %ebp		      #=====================================================
+   0x8048b1f <main+1>:  mov    %esp,%ebp	      #
+   0x8048b21 <main+3>:  mov    $0x80d65e0,%eax	      #
+   0x8048b26 <main+8>:  and    $0xfffff000,%eax	      #
+   0x8048b2b <main+13>: push   $0x7		      # mprotect((void*)((unsigned int)Name & 0xfffff000),
+   0x8048b2d <main+15>: push   $0x1		      # 1,PROT_READ | PROT_WRITE | PROT_EXEC);
+   0x8048b2f <main+17>: push   %eax		      #
+   0x8048b30 <main+18>: call   0x805e180 <mprotect>   #
+						      #
+   0x8048b35 <main+23>: add    $0xc,%esp	      #=====================================================
+
+   0x8048b38 <main+26>: push   $0x80ab0a8	     #================================
+   0x8048b3d <main+31>: call   0x804f070 <puts>	     # printf("What is your name?\n");
+   0x8048b42 <main+36>: add    $0x4,%esp	     #================================
+
+   0x8048b45 <main+39>: push   $0x80d65e0   	      #==================
+   0x8048b4a <main+44>: call   0x8048aac <readString> # readString(Name);
+   0x8048b4f <main+49>: add    $0x4,%esp              #==================
+
+   0x8048b52 <main+52>: push   $0x80ab0bb             #========================================
+   0x8048b57 <main+57>: push   $0x80d65e0             #
+   0x8048b5c <main+62>: call   0x805af90 <strcmp>     #	
+   0x8048b61 <main+67>: add    $0x8,%esp              # if (strcmp(Name, "Angelos Bilas") == 0)
+   0x8048b64 <main+70>: test   %eax,%eax              #
+   0x8048b66 <main+72>: jne    0x8048b6f <main+81>    #========================================
+
+   0x8048b68 <main+74>: movb   $0x36,0x80d46e8        # grade = '6';
+   
+   0x8048b6f <main+81>: push   $0x80d65e0	      #===================================
+   0x8048b74 <main+86>: push   $0x80ab0c9	      # printf("Thank you, %s.\n", Name);
+   0x8048b79 <main+91>: call   0x804eaf0 <printf>     #
+   0x8048b7e <main+96>: add    $0x8,%esp              #===================================
+
+   0x8048b81 <main+99>: movzbl 0x80d46e8,%eax         #
+   0x8048b88 <main+106>: movsbl %al,%eax
+   0x8048b8b <main+109>: push   %eax		    #===============================================
+   0x8048b8c <main+110>: push   $0x80ab0dc	    # printf("I recommend that you get a grade of %c 
+   0x8048b91 <main+115>: call   0x804eaf0 <printf>  # on this assignment.\n",grade);
+   0x8048b96 <main+120>: add    $0x8,%esp           #===============================================
+
+   0x8048b99 <main+123>: push   $0x0                # exit(0);
+   0x8048b9b <main+125>: call   0x804e110 <exit>    # exit(0);
+
+
+
+   0x8048ba0 <__libc_start_main>:       push   %ebp
+   0x8048ba1 <__libc_start_main+1>:     mov    $0x0,%eax
+   0x8048ba6 <__libc_start_main+6>:     push   %edi
+   0x8048ba7 <__libc_start_main+7>:     push   %esi
+   0x8048ba8 <__libc_start_main+8>:     push   %ebx
+   0x8048ba9 <__libc_start_main+9>:     sub    $0x4c,%esp
+
+
+**Data Section
+Variable:		Address:			Value:
+grade			0x80d46e8 			int: 3 , char: 51
+ Moreover with the commant "p Name" I found that the Name is a string of size 44, 
+ so the BUFSIZE is of size 44!
+
+**BSS Section
+Variable:		Address:			Value:
+Name			0x80d65e0			\000... with 43 total zeroes.(it is a blank string thats why!)
+
+
+**Stack Frame
+I executed the command: gdb hello
+Then i put a breakpoint in line 27 of the file hello.c : b hello.c:27
+I run the program with argument: Manos Katsifarakis
+In the end with the commant: info frame, I found the stack frame.
+Stack level 0, frame at 0xbffff5d4:
+ eip = 0x8048b1b in readString (hello.c:27); saved eip = 0x8048b4f
+ called by frame at 0xbffff5e0
+ source language c.
+ Arglist at 0xbffff5cc, args: s=0x80d65e0 <Name> "Manos Katsifarakis"
+ Locals at 0xbffff5cc, Previous frame's sp is 0xbffff5d4
+ Saved registers:
+   ebp at 0xbffff5cc, eip at 0xbffff5d0
+Kataxwritis:		Dieuthinsi:			Value:
+   esp				0xbffff598
+   ebp				0xbffff5cc
+
+For x/53b $esp we get the following information:
+
+0xbffff598:  77		97		110		111		115		32		75		97
+0xbffff5a0:  116	115		105		102		97		114		97		107
+0xbffff5a8:  105	115		0		0		18		0		0		0
+0xbffff5b0:  1		0		0		0		100		-10		-1		-65
+0xbffff5b8:  108	-10		-1		-65		1		0		0		0
+0xbffff5c0:  52		-128	4		8		10		0		0		0
+0xbffff5c8:  18		0		0		0		-40(here ends the address 0xbffff5cc)
+   
+
